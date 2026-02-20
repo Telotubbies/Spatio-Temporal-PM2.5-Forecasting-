@@ -28,10 +28,8 @@ def check_all_data():
         print(f"   Lat: {df['lat'].min():.4f}°N - {df['lat'].max():.4f}°N")
         print(f"   Lon: {df['lon'].min():.4f}°E - {df['lon'].max():.4f}°E")
         if 'pm25' in df.columns:
-            valid_pm25 = df['pm25'].dropna()
-            # Convert to numeric if string
-            if valid_pm25.dtype == 'object':
-                valid_pm25 = pd.to_numeric(valid_pm25, errors='coerce').dropna()
+            # Convert to numeric first
+            valid_pm25 = pd.to_numeric(df['pm25'], errors='coerce').dropna()
             if len(valid_pm25) > 0:
                 print(f"\n📊 PM2.5 Values:")
                 print(f"   Min: {float(valid_pm25.min()):.1f} μg/m³")
