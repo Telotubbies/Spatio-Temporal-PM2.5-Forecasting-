@@ -8,6 +8,7 @@ from typing import List, Dict, Optional
 import pandas as pd
 import httpx
 import asyncio
+import time
 from pathlib import Path
 import numpy as np
 
@@ -38,6 +39,7 @@ class WeatherCollector:
         self.historical_api_url = data_config.OPEN_METEO_HISTORICAL_API
         self.batch_size = data_config.BATCH_SIZE
         self.chunk_size_days = data_config.CHUNK_SIZE_DAYS
+        self.request_delay = getattr(data_config, 'REQUEST_DELAY_SECONDS', 3.0)
         
     def _build_url(
         self,
@@ -174,6 +176,11 @@ class WeatherCollector:
                 total_batches = (len(unique_locs) + self.batch_size - 1) // self.batch_size
                 logger.info(f"  Batch {batch_num}/{total_batches} ({len(lats)} locations)...")
                 
+                # Add delay before request (except first batch)
+                if i > 0:
+                    logger.info(f"  Waiting {self.request_delay} seconds to avoid rate limit...")
+                    time.sleep(self.request_delay)
+                
                 # Build URL with appropriate endpoint
                 url = self._build_url(
                     lats, lons, 
@@ -184,6 +191,15 @@ class WeatherCollector:
                 try:
                     with httpx.Client(timeout=300.0) as client:  # Increased timeout for historical data
                         response = client.get(url)
+                        
+                        # Check for rate limit (429)
+                        if response.status_code == 429:
+                            retry_after = int(response.headers.get('Retry-After', 60))
+                            logger.warning(f"  ⚠️  Rate limited! Waiting {retry_after} seconds...")
+                            time.sleep(retry_after)
+                            # Retry the request
+                            response = client.get(url)
+                        
                         response.raise_for_status()
                         data = response.json()
                     

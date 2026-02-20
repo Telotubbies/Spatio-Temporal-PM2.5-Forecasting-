@@ -22,8 +22,9 @@ class DataConfig:
     # Data collection
     HISTORICAL_DAYS: int = 365  # Days to fetch (default)
     HISTORICAL_START_YEAR: int = 2010  # Start year for historical data
-    BATCH_SIZE: int = 50  # Stations per Open-Meteo batch call
+    BATCH_SIZE: int = 10  # Stations per Open-Meteo batch call (reduced to avoid rate limit)
     CHUNK_SIZE_DAYS: int = 365  # Fetch data in chunks to avoid large API calls
+    REQUEST_DELAY_SECONDS: float = 3.0  # Delay between API requests to avoid rate limiting
     
     # Time features
     TIMEZONE: str = "Asia/Bangkok"
