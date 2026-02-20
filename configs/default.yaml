@@ -1,0 +1,71 @@
+project:
+  seed: 42
+  data_dir: data
+  outputs_dir: outputs
+
+region:
+  # Bangkok-centered ~300x300 km box (approx).
+  lat_min: 11.0
+  lat_max: 16.5
+  lon_min: 97.5
+  lon_max: 103.5
+
+era5:
+  grid_res_deg: 0.25
+  variables:
+    - u10
+    - v10
+    - u
+    - v
+    - blh
+    - r
+    - t
+  pressure_level_hpa: 850
+
+firms:
+  radius_km: 150
+  sources:
+    - VIIRS_SNPP_NRT
+
+pm25:
+  source: openaq
+  qc:
+    min_value: 0.0
+    max_value: 1000.0
+
+features:
+  window_hours: 96
+  horizons_hours: [24, 48]
+  # Per-grid normalization statistics computed on train split.
+
+graph:
+  radius_km: 150
+  max_neighbors: 8
+  # Keep edges where neighbor is downwind (cosine alignment > threshold)
+  downwind_cos_threshold: 0.0
+
+model:
+  hidden_dim: 64
+  spatial_layers: 2
+  temporal: gru
+  dropout: 0.1
+
+train:
+  device: auto
+  batch_size: 8
+  epochs: 30
+  lr: 0.0005
+  weight_decay: 0.0001
+  loss: huber
+  huber_delta: 10.0
+  use_amp: false
+  grad_clip_norm: 1.0
+  checkpoint_every_steps: 500
+  keep_last_k_checkpoints: 5
+  resume: true
+
+split:
+  # ISO timestamps in UTC
+  train_end: "2021-12-31T23:00:00Z"
+  val_end: "2022-12-31T23:00:00Z"
+  test_end: "2023-12-31T23:00:00Z"
