@@ -49,4 +49,14 @@ Thumbs.db
 # Temporary
 *.tmp
 *.temp
+*.pid
+push_files_list.txt
+
+# Status files
+*_STATUS.md
+*_GUIDE.md
+*_INSTRUCTIONS.md
+*_SUMMARY.md
+*_CHECKLIST.md
+*_COMPARISON.md
 

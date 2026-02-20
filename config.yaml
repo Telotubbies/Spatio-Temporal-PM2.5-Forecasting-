@@ -1,0 +1,144 @@
+# PM2.5 Forecasting System Configuration
+
+# Data Configuration
+data:
+  # Bangkok/Thailand bounding box
+  bbox:
+    lon_min: 100.3
+    lat_min: 13.5
+    lon_max: 100.8
+    lat_max: 13.9
+  
+  # Historical data
+  historical_start_year: 2010
+  historical_days: 365
+  
+  # API settings
+  batch_size: 10
+  request_delay_seconds: 3.0
+  chunk_size_days: 365
+
+# Grid Configuration
+grid:
+  size: 32  # Options: 16, 32, 64
+  interpolation_method: "idw"  # Options: idw, kriging
+  idw_power: 2.0
+  kriging_variogram: "spherical"
+
+# Model Configuration
+model:
+  type: "st_unn"  # Options: lstm, conv_lstm, st_unn
+  input_hours: 24
+  output_hours: 6
+  
+  # Architecture
+  lstm:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    dense_units: [32]
+  
+  conv_lstm:
+    filters: [32, 64]
+    kernel_size: 3
+    dropout: 0.2
+  
+  st_unn:
+    encoder_filters: 32
+    bottleneck_filters: 64
+    decoder_filters: 32
+    skip_connections: true
+    loss_weights:
+      mse: 0.7
+      mae: 0.3
+
+# Training Configuration
+training:
+  batch_size: 8
+  learning_rate: 0.0001
+  epochs: 100
+  early_stopping_patience: 10
+  lr_scheduler: "ReduceLROnPlateau"
+  lr_scheduler_params:
+    factor: 0.5
+    patience: 5
+    min_lr: 1e-6
+  
+  # Data split
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  split_method: "time_based"  # Options: time_based, random
+  
+  # Checkpointing
+  save_best: true
+  save_last: true
+  checkpoint_dir: "data/models/checkpoints"
+  keep_last_k: 5
+  
+  # Mixed precision
+  use_amp: true  # Automatic Mixed Precision
+  
+  # TensorBoard
+  tensorboard_dir: "data/models/tensorboard"
+  log_interval: 10
+
+# Evaluation Configuration
+evaluation:
+  metrics:
+    - mae
+    - rmse
+    - r2
+    - mape
+    - pixel_mae  # For grid models
+    - ssim  # For grid models
+  
+  # Visualization
+  save_plots: true
+  plot_dir: "data/models/evaluation"
+  save_pdf_report: true
+
+# Inference Configuration
+inference:
+  forecast_horizon: 6  # hours
+  save_forecast: true
+  forecast_dir: "data/forecasts"
+  export_geojson: true
+  geojson_dir: "data/forecasts/geojson"
+
+# Feature Configuration
+features:
+  # Time features
+  time_features: true
+  time_encoding: "cyclic"  # Options: cyclic, one_hot
+  
+  # Normalization
+  normalize: true
+  scaler: "StandardScaler"  # Options: StandardScaler, MinMaxScaler, RobustScaler
+  
+  # Missing value handling
+  max_missing_pct: 0.20
+  interpolation_limit_hours: 3
+  
+  # Outlier removal
+  use_iqr: true
+  z_score_threshold: 3.0
+
+# Performance Configuration
+performance:
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  async_api_calls: true
+  cache_enabled: true
+  cache_dir: "data/cache"
+  seed: 42
+
+# Bonus Features
+bonus:
+  attention: false
+  ensemble: false
+  uncertainty_estimation: false  # MC Dropout
+  hyperparameter_tuning: false  # Optuna
+  optuna_trials: 50
+
