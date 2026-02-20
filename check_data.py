@@ -29,12 +29,17 @@ def check_all_data():
         print(f"   Lon: {df['lon'].min():.4f}°E - {df['lon'].max():.4f}°E")
         if 'pm25' in df.columns:
             valid_pm25 = df['pm25'].dropna()
+            # Convert to numeric if string
+            if valid_pm25.dtype == 'object':
+                valid_pm25 = pd.to_numeric(valid_pm25, errors='coerce').dropna()
             if len(valid_pm25) > 0:
                 print(f"\n📊 PM2.5 Values:")
-                print(f"   Min: {valid_pm25.min():.1f} μg/m³")
-                print(f"   Max: {valid_pm25.max():.1f} μg/m³")
-                print(f"   Mean: {valid_pm25.mean():.1f} μg/m³")
+                print(f"   Min: {float(valid_pm25.min()):.1f} μg/m³")
+                print(f"   Max: {float(valid_pm25.max()):.1f} μg/m³")
+                print(f"   Mean: {float(valid_pm25.mean()):.1f} μg/m³")
                 print(f"   Valid: {len(valid_pm25)}/{len(df)} stations")
+            else:
+                print("\n⚠️  No valid PM2.5 values found")
         if 'timestamp' in df.columns:
             print(f"\n📅 Timestamp:")
             print(f"   Range: {df['timestamp'].min()} to {df['timestamp'].max()}")
