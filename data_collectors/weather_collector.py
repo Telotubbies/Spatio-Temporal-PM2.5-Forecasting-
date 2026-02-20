@@ -206,16 +206,16 @@ class WeatherCollector:
                     # Parse response
                     if "hourly" in data:
                         hourly = data["hourly"]
-                        time = hourly.get("time", [])
+                        time_array = hourly.get("time", [])
                         
-                        if not time:
+                        if not time_array:
                             logger.warning(f"  No time data in response for batch {batch_num}")
                             continue
                         
                         # Process each location in batch
                         # Open-Meteo with multiple locations returns data sequentially
                         # Each location's data follows the time array
-                        num_timesteps = len(time)
+                        num_timesteps = len(time_array)
                         num_locations = len(batch_locs)
                         
                         # Get all hourly arrays
@@ -235,7 +235,7 @@ class WeatherCollector:
                         
                         # Process each location
                         for loc_idx, (_, loc) in enumerate(batch_locs.iterrows()):
-                            for t_idx, timestamp in enumerate(time):
+                            for t_idx, timestamp in enumerate(time_array):
                                 # For multiple locations, data is: [loc1_t1, loc1_t2, ..., loc1_tN, loc2_t1, ...]
                                 # So index = loc_idx * num_timesteps + t_idx
                                 data_idx = loc_idx * num_timesteps + t_idx
